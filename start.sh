@@ -1,11 +1,13 @@
-#!/bin/base
+#!/bin/bash
 
 export MIX_ENV=prod
 export PORT=4801
 
+CFGD=$(readlink -f ~/.config/bulls)
+
 if [ ! -e "$CFGD/base" ]; then
-    echo "run deploy first"
-    exit 1
+	echo "Deploy First"
+	exit 1
 fi
 
 SECRET_KEY_BASE=$(cat "$CFGD/base")

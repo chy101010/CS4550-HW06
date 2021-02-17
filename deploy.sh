@@ -8,19 +8,20 @@ export SECRET_KEY_BASE=insecure
 mix deps.get --only prod
 mix compile
 
-CFGB=$(readlink -f ~/.config/bulls)
+CFGD=$(readlink -f ~/.config/bulls)
 
-# Create CFGD if doesn't exist
 if [ ! -d "$CFGD" ]; then
-    mkdir -p "$CFGD"
+	mkdir -p $CFGD
+	echo "Hello One"
 fi
 
-# Generate secret key if doesn't exist
+echo "Hello Two"
+
 if [ ! -e "$CFGD/base" ]; then
-    mix phx.gen.secret > "CFGD/base"
+	mix phx.gen.secret > "$CFGD/base"
+	echo "Hello Three"
 fi
 
-# Load Secret Base
 SECRET_KEY_BASE=$(cat "$CFGD/base")
 export SECRET_KEY_BASE
 
@@ -29,3 +30,4 @@ npm run deploy --prefix ./assets
 mix phx.digest
 
 mix release
+
