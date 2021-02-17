@@ -1,0 +1,24 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+}
+
+table {
+  text-align: center;
+  width: 400px;
+}
+
+table, thead, tbody, td, td {
+  border-bottom: 1px solid black;
+  border-collapse: collapse;
+  padding: 10px;
+  background-color: white;
+}
+
+#input {
+  text-align: center;
+  font-size: 30px;
+  width: 150px;
+}

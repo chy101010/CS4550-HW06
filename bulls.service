@@ -1,0 +1,15 @@
+[Unit]
+Description=Bulls Game
+
+[Service]
+Type=simple
+User=bulls
+Group=bulls
+Restart=on-failure
+Environment=LANG=en_US.UTF-8
+
+WorkingDirectory=/home/bulls/bulls
+ExecStart=/bin/bash /home/bulls/bulls/start.sh
+
+[Install]
+WantedBy=multi-user.target
