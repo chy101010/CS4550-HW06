@@ -1,0 +1,70 @@
+Frontend 
+1. Login screen
+    a. User join: enter game name and username: join that channel
+    b. That user join to other user already in that channel 
+    c. The channel sends back a view of the lobby to all subscribed users 
+2. Lobby 
+    a. switchObserver 
+    b. ready
+    c. leader board win/loses count 
+3. Game 
+    a. guess
+    c. leave
+    b. server broadcast result
+
+State
+MainLobby:
+{
+    players: []
+    gameName: ...,
+    lastWinner: "",
+    leaderboard: [(user1, win, loss), (user2, win2, loss2), ...]
+}
+Server:
+{
+    gameStatus = true, (whether there is an ongoing game),
+    secret = randomSecret(),
+    
+}
+
+Backend
+1. A supervisor to start registry and dynamic supervisor
+    a. link registry with dynamic supervisor
+        i. dynamic supervisor creates process and link it to the registry
+    b. Lobby and Game process are one
+3. Use the game name to start a process of that game name.
+
+Socket
+1. joinChannel
+    a. Use the gameName to start a supervised process using that :Name. 
+    b. If exist join that process
+2. login 
+3. guess
+4. ready
+5. switchObserver
+6. leave
+
+Game Process Module
+1. create(name)
+    a. registry(name) exist?
+    b. If yes: {:ok}
+    c. If no:  Use the dynamic supervisor to start a child passing the initial state 
+2. view()
+    a. return view 
+3. guess(username, letter)
+    a. valid user turn 
+    b. make a guess 
+4. ready(username)
+    a. mark a user ready 
+5. addName(username)
+6. switchObserver(username)
+7. leave(username)
+8. reset()
+
+1. init - send a check active timer
+2. handle_info
+    a. listen to the active timer, check activity to decide whether it kill itself
+
+
+Question:
+Backup Agent 

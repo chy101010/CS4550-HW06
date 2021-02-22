@@ -10,10 +10,10 @@ import { Socket } from "phoenix"
 
 let socket = new Socket("/socket", { params: { token: "" } })
 
-socket.connect()
+socket.connect();
 
-// Now that you are connected, you can join channels with a topic:
-let channel = socket.channel("game:1", {})
+// // Now that you are connected, you can join channels with a topic:
+// let channel = socket.channel("game:1", {})
 
 // SetState
 let callback = null;
@@ -71,13 +71,20 @@ export function ch_reset() {
   })
 }
 
-channel.join()
-  .receive("ok", response => {
-    response.input = "";
-    state_update(response);
-  })
-  .receive("error", resp => { 
-    console.log("Unable to join", resp) 
-  })
+
+// joins a lobby with a game name
+export function ch_join_lobby(gameName, userName) {
+  let channel = socket.channel("game:" + gameName, {userName: userName})
+  channel.join()
+    .receive("ok", response => {
+      response.input = "";
+      state_update(response);
+    })
+    .receive("error", resp => { 
+      console.log("Unable to join", resp) 
+    })
+}
+
+
 
 export default socket
