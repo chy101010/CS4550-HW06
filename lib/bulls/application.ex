@@ -12,7 +12,7 @@ defmodule Bulls.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Bulls.PubSub},
       # Start the Endpoint (http/https)
-      BullsWeb.Endpoint
+      BullsWeb.Endpoint,
       # Start a worker by calling: Bulls.Worker.start_link(arg)
       # {Bulls.Worker, arg}
       Bulls.Setup

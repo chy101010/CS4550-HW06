@@ -1,6 +1,5 @@
 defmodule Bulls.Setup do 
     use Supervisor
-    use DynamicSupervisor
 
     # Client 
     def start_link(_arg) do 
@@ -11,10 +10,9 @@ defmodule Bulls.Setup do
     @impl true 
     def init(:ok) do
         children = [
-            {Registry, name: Bulls.Registry, key: :unique}
-            {DynamicSupervisor, name: Bulls.DynamicSupervisor, strategy: :one_for_one}
+            {Registry, name: Bulls.Registry, keys: :unique},
+            {DynamicSupervisor, name: Bulls.Sup, strategy: :one_for_one}
         ]
-
         Supervisor.init(children, strategy: :one_for_one)
     end 
 

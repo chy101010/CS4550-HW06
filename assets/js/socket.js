@@ -16,60 +16,60 @@ socket.connect();
 // let channel = socket.channel("game:1", {})
 
 // SetState
-let callback = null;
+// let callback = null;
 
 // User-Side States
-let state = {
-  guesses: [],
-  lives: 8,
-  message: "",
-  result: [],
+// let state = {
+//   guesses: [],
+//   lives: 8,
+//   message: "",
+//   result: [],
   // User Input doesn't need to be stored in the socket
-  input: ""
-};
+//   input: ""
+// };
 
 // Update the states with the given {@param st}
-function state_update(st) {
-  state = st;
-  if (callback) {
-    callback(st);
-  }
-}
+// function state_update(st) {
+//   state = st;
+//   if (callback) {
+//     callback(st);
+//   }
+// }
 
 // Passes in setState after re-render
-export function ch_join(cb) {
-  callback = cb;
-  callback(state);
-}
+// export function ch_join(cb) {
+//   callback = cb;
+//   callback(state);
+// }
 
 // Updates the user-side input with the given {@param input}
-export function store_input(input) {
-  state.input = input;
-}
+// export function store_input(input) {
+//   state.input = input;
+// }
 
 // Pushes the guess to the channel
-export function ch_push(guess = "wrong") {
-  channel.push("guess", { guess: guess })
-    .receive("ok", response => {
-      response.input = "";
-      state_update(response);
-    })
-    .receive("error", response => {
-      ("Unable to push", response)
-    });
-}
+// export function ch_push(guess = "wrong") {
+//   channel.push("guess", { guess: guess })
+//     .receive("ok", response => {
+//       response.input = "";
+//       state_update(response);
+//     })
+//     .receive("error", response => {
+//       ("Unable to push", response)
+//     });
+// }
 
-// Requests a reset 
-export function ch_reset() {
-  channel.push("reset", "")
-  .receive("ok", response => {
-    response.input = "";
-    state_update(response);
-  })
-  .receive("error", resp => { 
-    console.log("Unable to reset", resp) 
-  })
-}
+// // Requests a reset 
+// export function ch_reset() {
+//   channel.push("reset", "")
+//   .receive("ok", response => {
+//     response.input = "";
+//     state_update(response);
+//   })
+//   .receive("error", resp => { 
+//     console.log("Unable to reset", resp) 
+//   })
+// }
 
 
 // joins a lobby with a game name
@@ -77,8 +77,9 @@ export function ch_join_lobby(gameName, userName) {
   let channel = socket.channel("game:" + gameName, {userName: userName})
   channel.join()
     .receive("ok", response => {
-      response.input = "";
-      state_update(response);
+      // response.input = "";
+      // state_update(response);
+      console.log(response);
     })
     .receive("error", resp => { 
       console.log("Unable to join", resp) 

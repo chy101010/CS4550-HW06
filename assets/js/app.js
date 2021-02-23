@@ -19,11 +19,12 @@ import "phoenix_html";
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import Bulls from './game';
+import {Bulls} from './game';
+import Login from './login';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Bulls />
+    <Login />
   </React.StrictMode>,
   document.getElementById('root')
 );
