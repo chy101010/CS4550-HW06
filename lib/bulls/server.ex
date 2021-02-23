@@ -22,9 +22,9 @@ defmodule Bulls.Server do
         end
     end
 
-    #dDone
+    # Done
     def start_link(gameName) do
-        game = Game.new();
+        game = Game.new(gameName);
         GenServer.start_link(__MODULE__, game, name: reg(gameName))
     end
 
@@ -35,16 +35,21 @@ defmodule Bulls.Server do
 
     # Done
     def add_user(gameName, userName) do
-         GenServer.call(reg(gameName), {:join, userName})
+        GenServer.call(reg(gameName), {:join, userName}) 
+    end
+
+    # Done
+    def leave_user(gameName, userName) do
+        GenServer.cast(reg(gameName), {:leave, userName});
     end
 
     # def post_guess(gameName, username, guess) do
         
     # end
 
-    # def ready(gameName, username) do
-        
-    # end
+    def toggleReady(gameName, username) do
+        GenServer.call(reg(gameName), username);
+    end
 
     # def add_user(gameName, username) do
         
@@ -68,14 +73,28 @@ defmodule Bulls.Server do
         {:ok, state}
     end 
 
+    # View
     def handle_call(:view, _from, state) do
         {:reply, Game.view(state), state};
     end
 
+    # Join
     def handle_call({:join, userName}, _from, state) do
         case Game.join_game(state, userName) do 
             {:ok, state} -> {:reply, {:ok} ,state};
             {:error, msg} -> {:reply, {:error}, state};
         end 
-    end 
+    end
+
+    # Leave
+    def handle_cast({:leave, userName}, state) do
+        {:ok, newState} = Game.leave_game(state, userName);
+        {:noreply, newState};
+    end
+
+    # Ready 
+    def handle_call({:ready, userName}, _from, state) do
+        
+
+    end
 end

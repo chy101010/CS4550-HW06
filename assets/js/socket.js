@@ -12,35 +12,38 @@ let socket = new Socket("/socket", { params: { token: "" } })
 
 socket.connect();
 
+socket.onClose(() =>{
+  channel.push("onClose", "");
+});
+
 // // Now that you are connected, you can join channels with a topic:
 // let channel = socket.channel("game:1", {})
 
 // SetState
-// let callback = null;
+let callback = null;
+
+// Channel
+let channel = null;
 
 // User-Side States
-// let state = {
-//   guesses: [],
-//   lives: 8,
-//   message: "",
-//   result: [],
-  // User Input doesn't need to be stored in the socket
-//   input: ""
-// };
+let state = {
+
+};
 
 // Update the states with the given {@param st}
-// function state_update(st) {
-//   state = st;
-//   if (callback) {
-//     callback(st);
-//   }
-// }
+export function state_update(st) {
+  state = st;
+  console.log(state);
+  if (callback) {
+    callback(st);
+  }
+}
 
 // Passes in setState after re-render
-// export function ch_join(cb) {
-//   callback = cb;
-//   callback(state);
-// }
+export function ch_join(cb) {
+  callback = cb;
+  callback(state);
+}
 
 // Updates the user-side input with the given {@param input}
 // export function store_input(input) {
@@ -72,17 +75,28 @@ socket.connect();
 // }
 
 
-// joins a lobby with a game name
+// joins a lobby with a gameName
 export function ch_join_lobby(gameName, userName) {
-  let channel = socket.channel("game:" + gameName, {userName: userName})
+  channel = socket.channel("game:" + gameName, {userName: userName})
   channel.join()
     .receive("ok", response => {
-      // response.input = "";
-      // state_update(response);
-      console.log(response);
+      state_update(response);
+      channel.on("view", state_update);
+      // channel.onClose();
     })
     .receive("error", resp => { 
       console.log("Unable to join", resp) 
+    })
+}
+
+// leave a game/lobby 
+export function ch_leave() {
+  channel.push("leave", "")
+    .receive("ok", response => {
+      state_update(response);
+    })
+    .receive("error", resp => { 
+      console.log("Unable to reset", resp) 
     })
 }
 

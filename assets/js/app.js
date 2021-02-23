@@ -13,18 +13,17 @@ import "milligram";
 //
 //     import {Socket} from "phoenix"
 //     import socket from "./socket"
-//
+
 import "phoenix_html";
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {Bulls} from './game';
-import Login from './login';
+import Main from './main';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Login />
+    <Main />
   </React.StrictMode>,
   document.getElementById('root')
 );

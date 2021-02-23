@@ -2,11 +2,11 @@ defmodule BullsWeb.Game do
 
     # Done
     # create new/reset
-    def new do
+    def new(gameName) do
         %{
-            gameName: "",
+            gameName: gameName,
             game: false,
-            leaderBoard: %{:player1 => [1, 2], :player2 => [3, 4]}, #example: %{ player: (win, loss) }
+            leaderBoard: %{}, #example: %{ player: (win, loss) }
             players: %{}, #example: %{ player: false}
             observers: MapSet.new(),
             results: [], #example: [{player, guess, result}, ...]
@@ -23,17 +23,47 @@ defmodule BullsWeb.Game do
             leaderBoard: state.leaderBoard,
             players: Map.to_list(state.players),
             observers: MapSet.to_list(state.observers),
-            gameName: state.game
+            gameName: state.gameName,
+            game: state.game
         }
     end
 
-    # update the state.players and state.observers
+    # Done 
+    def leave_view() do 
+        %{
+            results: [],
+            preWinner: "",
+            leaderBoard: [],
+            players: [],
+            observers: [],
+            gameName: "",
+            userName: "",
+            isPlayer: false,
+            isReady: false
+        }
+    end 
+
+
+    # update the state.players and state.observers by adding userName
     def join_game(state, userName) do
         if(MapSet.member?(state.observers, userName) || Map.has_key?(state.players, userName)) do
             {:error, message: "Duplicate Player"};
         else 
            newObserver =  MapSet.put(state.observers, userName);
-           {:ok, state: %{state.observers | observers: newObserver}};
+           {:ok, %{state | observers: newObserver}};
+        end
+    end
+
+    # update the state.players and state.observers by deleting userName
+    def leave_game(state, userName) do
+        cond do
+            MapSet.member?(state.observers, userName) -> 
+                newObserver = MapSet.delete(state.observers, userName);
+                {:ok, %{state | observers: newObserver}};
+            Map.has_key?(state.players, userName) ->
+                newPlayers = Map.delete(state.players, userName);
+                {:ok, %{state | players: newPlayers}};
+            true -> {:error, message: "Unknown Player"}
         end
     end
     
