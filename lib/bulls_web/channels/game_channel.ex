@@ -22,7 +22,7 @@ defmodule BullsWeb.GameChannel do
       # Gets the View
       view = Server.get_view(gameName);
       # BroadCast
-      send(self(), :after_join);
+      send(self(), {:after_join, gameName});
       socket1 = assign(socket, :userName, userName)
       |> assign(:gameName, gameName);
       {:ok, attachNames(view, userName), socket1};
@@ -36,7 +36,7 @@ defmodule BullsWeb.GameChannel do
     gameName = socket.assigns[:gameName];
     userName = socket.assigns[:userName];
     Server.leave_user(gameName, userName);
-    send(self(), :after_join);
+    send(self(), {:after_join, gameName});
     socket1 = assign(socket, :gameName, nil)
     |> assign(:userName, nil)
     view = Game.leave_view();
@@ -44,19 +44,16 @@ defmodule BullsWeb.GameChannel do
   end
 
   @impl true
-  def handle_info(:after_join, socket) do
-    view = Server.get_view(socket.assigns[:gameName]);
-    broadcast(socket, "view", {socket.assigns[:userName], view});
+  def handle_info({:after_join, gameName}, socket) do
+    view = Server.get_view(gameName);
+    broadcast(socket, "view", view);
     {:noreply, socket};
   end
 
   intercept ["view"]
   @impl true
   def handle_out("view", msg, socket) do
-    {sender, view} = msg;
-    if(socket.assigns[:userName] != sender) do
-      push(socket, "view", attachNames(view, socket.assigns[:userName]));
-    end
+    push(socket, "view", attachNames(msg, socket.assigns[:userName]));
     {:noreply, socket}
   end
 

@@ -94,6 +94,7 @@ export function ch_leave() {
   channel.push("leave", "")
     .receive("ok", response => {
       state_update(response);
+      channel.leave();
     })
     .receive("error", resp => { 
       console.log("Unable to reset", resp) 
