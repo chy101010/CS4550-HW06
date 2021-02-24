@@ -137,7 +137,6 @@ defmodule Bulls.Server do
 
     # Check out turn
     def handle_info({:check_out, gameName}, state) do
-        IO.puts("called Checkout");
         newState = Game.checkout_turn(state);
         if (newState.game) do
             Process.send_after(self(), {:check_out, gameName}, 4000);

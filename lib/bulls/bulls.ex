@@ -130,8 +130,6 @@ defmodule BullsWeb.Game do
     # If the userName is observer do Nothing
     # Else execute the guess
     def guess_game(state, userName, guess) do
-        IO.inspect(state.tempResults)
-        IO.inspect("guess game")
         if(MapSet.member?(state.observers, userName)) do
             {:error, message: "Not a player"};
         else
@@ -167,8 +165,11 @@ defmodule BullsWeb.Game do
     end
     
     defp addWinners(state, winner) do
+        IO.inspect(state.playerWin)
+        IO.inspect("PLAYERWIN")
         cond do
             length(state.tempResults) == 0 && winner > 0 ->
+                IO.inspect("winner")
                 %{state |
                     game: false,
                     execute: []
@@ -203,7 +204,11 @@ defmodule BullsWeb.Game do
     end
 
     defp updateLeaderBoard(state) do
+        # IO.inspect("update leader called")
+        IO.inspect(state.playerWin)
         if length(state.playerWin) == 0 do
+            # IO.puts("Return (length=0):");
+            # IO.inspect(state);
             state    
         else 
             head = hd(state.playerWin)
@@ -211,12 +216,16 @@ defmodule BullsWeb.Game do
             isWin = Enum.at(head, 1)
             #isWin = 1 if win 0 if loss
             if Map.has_key?(state.leaderBoard, playerName) do
+                # IO.puts("Leaderbord Update")
                 newState = %{ state |
                     playerWin: tl(state.playerWin),
-                    leaderBoard: Map.update!(state.leaderBoard, playerName, fn(prev) -> [Enum.at(prev, 0) + isWin, Enum.at(prev, 1) + (1-isWin)] end)
+                    leaderBoard: Map.update!(state.leaderBoard, playerName, fn(prev) ->
+                        [Enum.at(prev, 0) + isWin, Enum.at(prev, 1) + (1-isWin)] 
+                    end)
                 }
                 updateLeaderBoard(newState)
             else
+                # IO.puts("Leaderbord Put if key doesnt exist")
                 newLeaderBoard = Map.put(state.leaderBoard, playerName, [isWin, 1-isWin])
                 newState = %{state |
                     leaderBoard: newLeaderBoard
@@ -227,6 +236,7 @@ defmodule BullsWeb.Game do
     end
 
     defp reset(state) do
+        updateLeaderBoard(state)
         state1 = %{ state |
             secret: random_secret("", ["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
             results: [],
@@ -235,10 +245,7 @@ defmodule BullsWeb.Game do
         # %{username: false, username: true}
         newPlayers = Enum.map(state1.players, fn{userName, status} -> {userName, !status} end)
         |> Enum.into(%{})
-        state2 = %{ state1 |
-            players: newPlayers
-        }
-        updateLeaderBoard(state2)
+        %{ state1 | players: newPlayers }
     end
 
     def checkout_turn(state) do
@@ -246,7 +253,7 @@ defmodule BullsWeb.Game do
         # If yes, turn the state.game to false
         # If no, erase state.execute
         newState = addWinners(state, 0)
-        IO.inspect(state);
+        IO.inspect(state.secret);
         if !newState.game do
            reset(newState);
         else 
@@ -283,7 +290,6 @@ defmodule BullsWeb.Game do
         guessSet = MapSet.new(String.split(guess, "", trim: true));
         cond do 
             alreadyGuessed(st.results, guess) ->
-                IO.puts("Already Guessed");
                 {:error, message: "Invalid: Require New Guess"};
             MapSet.size(guessSet) != 4 || String.length(guess) != 4 -> 
                 {:error, "Invalid: Require 4 Unique Digits"}
