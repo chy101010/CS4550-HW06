@@ -39,18 +39,14 @@ defmodule BullsWeb.GameChannel do
     Server.leave_user(gameName, userName);
     # Check Ready
     Server.start_game(gameName);
+    # Try Check_Out
+    Server.try_check(gameName);
     send(self(), {:after_join, gameName});
     # Clear Socket Assigns
     socket1 = assign(socket, :gameName, nil)
     |> assign(:userName, nil)
     view = Game.leave_view();
     {:reply, {:ok, view}, socket};
-  end
-
-  @imple true
-  def handle_in("onClose", _payload, socket) do
-    IO.puts("callllled");
-    {:noreply, socket};
   end
 
   @impl true
@@ -86,6 +82,8 @@ defmodule BullsWeb.GameChannel do
     gameName = socket.assigns[:gameName];
     userName = socket.assigns[:userName];
     Server.make_guess(gameName, userName, guess);
+    # Try Check_Out
+    Server.try_check(gameName);
     # BroadCast
     send(self(), {:after_join, gameName});
     {:noreply, socket};
@@ -96,6 +94,8 @@ defmodule BullsWeb.GameChannel do
     gameName = socket.assigns[:gameName];
     userName = socket.assigns[:userName];
     Server.pass_game(gameName, userName);
+    # Try Check_Out
+    Server.try_check(gameName);
     send(self(), {:after_join, gameName});
     {:noreply, socket};
   end

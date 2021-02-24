@@ -82,4 +82,5 @@ Handle Manual pass/add to execute and end the turn: By increment the turn, set u
 # Turn can be ended through 
 # Pass, Guess, leave
 
-When player leaves, remove from players, 
+!When player leaves, remove from players, 
+!Mutiple winners - handle state.game

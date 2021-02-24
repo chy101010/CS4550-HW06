@@ -238,20 +238,16 @@ defmodule BullsWeb.Game do
         newState = updateLeaderBoard(state)
         state1 = %{ newState |
             secret: random_secret("", ["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
-            results: []
+            results: [],
+            turn: 0
         }
         # %{username: false, username: true}
-        IO.inspect("STATE AFTER RESET")
-        IO.inspect(state1)
         newPlayers = Enum.map(state1.players, fn{userName, status} -> {userName, !status} end)
         |> Enum.into(%{})
         %{ state1 | players: newPlayers }
     end
 
     def add_passed_results(state, players) do
-        IO.inspect("DURING ADD PASSED")
-        IO.inspect(state)
-        IO.inspect(players)
         if length(players) == 0 do
             state
         else 
@@ -272,14 +268,14 @@ defmodule BullsWeb.Game do
         # check if theres a winner 
         # If yes, turn the state.game to false
         # If no, erase state.execute
-        IO.inspect("STATE BEFORE CHECKOUT")
-        IO.inspect(state)
+        # IO.inspect("STATE BEFORE CHECKOUT")
+        # IO.inspect(state)
         newState = add_passed_results(state, Map.keys(state.players))
-        IO.inspect("STATE AFTER ADDING PASSED BEFORE WINNER")
-        IO.inspect(newState)
+        # IO.inspect("STATE AFTER ADDING PASSED BEFORE WINNER")
+        # IO.inspect(newState)
         newState1 = addWinners(newState, 0)
-        IO.inspect("STATE IN CHECKOUT AFTER ADD WINNERS")
-        IO.inspect(newState1)
+        # IO.inspect("STATE IN CHECKOUT AFTER ADD WINNERS")
+        # IO.inspect(newState1)
         if !newState1.game do
             reset(newState1);
         else 
@@ -296,6 +292,15 @@ defmodule BullsWeb.Game do
             {:ok, checkout_turn(state)} 
         else
             {:error, state}
+        end 
+    end 
+
+    # Try reset
+    def try_reset(state) do
+        if(map_size(state.players) == 0) do
+            reset(state);
+        else 
+            state;
         end 
     end 
 
@@ -355,23 +360,6 @@ defmodule BullsWeb.Game do
             else 
                 {0, "#{bull}A#{cow}B"}
             end 
-        end 
-    end 
-
-    # compareGuess // Returns guesses, result, lives, message
-    defp compareGuess(st, guess) do
-        {status, computed} = computeGuess(st.secret, guess, 0, 0, 0);
-        state0 = %{st | 
-                    guesses: MapSet.put(st.guesses, guess), 
-                    result: st.result ++ [computed],
-                    lives: st.lives - 1};
-        cond do
-            (status == 1) ->
-                %{state0 | game: false, message: {:ok, "Won the Game"}};
-            (state0.lives == 0) ->
-                %{state0 | game: false, message: {:ok, "Lost the Game"}};
-            true ->
-                state0;
         end 
     end 
 
