@@ -1,5 +1,6 @@
 defmodule Bulls.Server do
     
+    
     alias BullsWeb.Game
 
     def reg(gameName) do
@@ -33,39 +34,36 @@ defmodule Bulls.Server do
         GenServer.call(reg(gameName), :view);
     end
 
-    # Done
+    # Done // TODO? Error Handling
     def add_user(gameName, userName) do
-        GenServer.call(reg(gameName), {:join, userName}) 
+        GenServer.cast(reg(gameName), {:join, userName});
     end
 
-    # Done
+    # Done // TODO? Error Handling
     def leave_user(gameName, userName) do
         GenServer.cast(reg(gameName), {:leave, userName});
     end
 
-    # def post_guess(gameName, username, guess) do
-        
-    # end
-
-    def toggleReady(gameName, username) do
-        GenServer.call(reg(gameName), username);
+    # Done // TODO? Error Handling
+    def toggle_observer(gameName, username) do
+        GenServer.cast(reg(gameName), {:observer, username});
     end
 
-    # def add_user(gameName, username) do
-        
-    # end
+    def toggle_ready(gameName, username) do
+        GenServer.cast(reg(gameName), {:ready, username});
+    end
 
-    # def switchObserver(gameName, username) do
-        
-    # end
+    def make_guess(gameName, username, guess) do
+        GenServer.call(reg(gameName), {:guess, username, guess});
+    end
 
-    # def leave(gameName, username) do
-        
-    # end
+    def start_game(gameName) do
+        GenServer.cast(reg(gameName), {:start, gameName});
+    end
 
-    # def reset(gameName) do
-        
-    # end
+    def pass_game(gameName, userName) do
+        GenServer.cast(reg(gameName), {:pass, userName});
+    end
 
     # Server 
     @impl true
@@ -79,22 +77,72 @@ defmodule Bulls.Server do
     end
 
     # Join
-    def handle_call({:join, userName}, _from, state) do
-        case Game.join_game(state, userName) do 
-            {:ok, state} -> {:reply, {:ok} ,state};
-            {:error, msg} -> {:reply, {:error}, state};
-        end 
+    def handle_cast({:join, userName}, state) do
+        {:noreply, Game.join_game(state, userName)};
     end
 
     # Leave
     def handle_cast({:leave, userName}, state) do
-        {:ok, newState} = Game.leave_game(state, userName);
-        {:noreply, newState};
+        case Game.leave_game(state, userName) do
+            {:ok, newState} -> {:noreply, newState};
+            {:error, _msg} -> {:noreply, state}
+        end
     end
 
-    # Ready 
-    def handle_call({:ready, userName}, _from, state) do
-        
+    # Toggle Observer
+    def handle_cast({:observer, userName}, state) do
+        case Game.observer_game(state, userName) do 
+            {:ok, newState} -> {:noreply, newState};
+            {:error, msg} -> {:noreply, state};
+        end 
+    end
 
+    # Toggle Ready 
+    def handle_cast({:ready, userName}, state) do
+        case Game.ready_game(state, userName) do
+            {:ok, newState} -> {:noreply, newState};
+            {:error, msg} -> {:noreply, state};
+        end
+    end
+
+
+    # Post a guess
+    def handle_call({:guess, userName, guess}, _from, state) do
+        case Game.guess_game(state, userName, guess) do
+            {:error, msg} -> {:reply, {:error, msg}, state};
+            {:ok, newState} -> {:reply, {:ok}, newState};
+        end
+    end
+
+    # Start Game
+    def handle_cast({:start, gameName}, state) do
+        case Game.start_game(state) do
+            {:error, oldState} ->
+                {:noreply, oldState};
+            {:ok, newState} ->
+                send(self(), {:check_out, gameName});
+                {:noreply, newState};
+        end
+    end
+
+    # Pass Game
+    def handle_cast({:pass, userName}, state) do
+        case Game.pass_game(state, userName) do
+            {:error, _msg} -> 
+                {:noreply, state}
+            {:ok, newSocket} ->
+                {:noreply, newSocket};
+        end
+    end
+
+    # Check out turn
+    def handle_info({:check_out, gameName}, state) do
+        IO.puts("called Checkout");
+        newState = Game.checkout_turn(state);
+        if (newState.game) do
+            Process.send_after(self(), {:check_out, gameName}, 4000);
+        end
+        BullsWeb.Endpoint.broadcast("game:" <> gameName, "view", Game.view(newState));
+        {:noreply, newState};
     end
 end

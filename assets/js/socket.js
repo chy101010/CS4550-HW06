@@ -27,7 +27,6 @@ let channel = null;
 
 // User-Side States
 let state = {
-
 };
 
 // Update the states with the given {@param st}
@@ -45,36 +44,6 @@ export function ch_join(cb) {
   callback(state);
 }
 
-// Updates the user-side input with the given {@param input}
-// export function store_input(input) {
-//   state.input = input;
-// }
-
-// Pushes the guess to the channel
-// export function ch_push(guess = "wrong") {
-//   channel.push("guess", { guess: guess })
-//     .receive("ok", response => {
-//       response.input = "";
-//       state_update(response);
-//     })
-//     .receive("error", response => {
-//       ("Unable to push", response)
-//     });
-// }
-
-// // Requests a reset 
-// export function ch_reset() {
-//   channel.push("reset", "")
-//   .receive("ok", response => {
-//     response.input = "";
-//     state_update(response);
-//   })
-//   .receive("error", resp => { 
-//     console.log("Unable to reset", resp) 
-//   })
-// }
-
-
 // joins a lobby with a gameName
 export function ch_join_lobby(gameName, userName) {
   channel = socket.channel("game:" + gameName, {userName: userName})
@@ -82,7 +51,6 @@ export function ch_join_lobby(gameName, userName) {
     .receive("ok", response => {
       state_update(response);
       channel.on("view", state_update);
-      // channel.onClose();
     })
     .receive("error", resp => { 
       console.log("Unable to join", resp) 
@@ -99,6 +67,26 @@ export function ch_leave() {
     .receive("error", resp => { 
       console.log("Unable to reset", resp) 
     })
+}
+
+// observer toggle
+export function ch_toggle_observer() {
+  channel.push("toggleObserver", "");
+}
+
+// player toggle
+export function ch_toggle_ready() {
+  channel.push("toggleReady", "");
+} 
+
+// player guess
+export function ch_guess(guess = "wrong") {
+  channel.push("guess", {guess: guess});
+}
+
+// player guess
+export function ch_pass() {
+  channel.push("pass", "");
 }
 
 

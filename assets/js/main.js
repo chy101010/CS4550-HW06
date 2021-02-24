@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ch_join_lobby, ch_join, state_update, ch_leave} from './socket';
+import { ch_join_lobby, ch_join, state_update, ch_leave, ch_toggle_observer, ch_toggle_ready, ch_guess, ch_pass} from './socket';
 
 import Lobby from './lobby';
+import Game from './game';
 
 function Main() {
     const [state, setState] = useState({
         results: [],
-        preWinner: "",
+        preWinner: [],
         leaderBoard: [],
         players: [],
         observers: [],
@@ -40,17 +41,24 @@ function Main() {
     }
 
     function handleToggleObserver() {
-        ch_toggle_observer(state.userName,)
+        ch_toggle_observer();
     }
 
     function handleReady() {
-
+        ch_toggle_ready();
     }
 
     function handleLeave() {
         ch_leave();
     }
 
+    function handleGuess(guess) {
+        ch_guess(guess);
+    }
+
+    function handlePass() {
+        ch_pass();
+    }
 
     if (typeof (state.game) == "undefined") {
         return (
@@ -64,7 +72,7 @@ function Main() {
             </div>
             )
     }
-    else {
+    else if (!state.game){
         return (
             <Lobby
                 userName={state.userName}
@@ -78,6 +86,16 @@ function Main() {
                 handleReady={handleReady}
                 handleToggleObserver={handleToggleObserver}
                 handleLeave={handleLeave}
+            />
+        )
+    }
+    else {
+        return (
+            <Game
+                results = {state.results} 
+                handleLeave={handleLeave}
+                handleGuess={handleGuess}
+                handlePass={handlePass}
             />
         )
     }

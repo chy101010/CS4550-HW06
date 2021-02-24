@@ -34,6 +34,18 @@ function Lobby(props) {
         )
     }
 
+    // TODO refactor
+    let playersBoard = [];
+    let index = 0;
+    for (const [key, value] of Object.entries(props.players)) {
+        playersBoard.push(
+            <tr key={index + 1950}>
+                <td key={index + 2000}>{key}</td>
+                <td key={index + 2050}>{"" + value}</td>
+            </tr>
+        )
+    }
+
     return (
         <div id="lobby">
             <h1>Lobby: {props.gamename}</h1>
@@ -41,12 +53,23 @@ function Lobby(props) {
             <table>
                 <thead>
                     <tr>
-                        <th>Player</th>
+                        <th>leaderBoard</th>
                         <th>Win/Lose</th>
                     </tr>
                 </thead>
                 <tbody>
                     {leaderBoard}
+                </tbody>
+            </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Players</th>
+                        <th>Ready</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {playersBoard}
                 </tbody>
             </table>
             <table>
@@ -60,8 +83,8 @@ function Lobby(props) {
                 </tbody>
             </table>
             <h1>Player: {props.userName}</h1>
-            <button onClick={props.handleToggleObserver}>getPlayerStatus({props.isPlayer})</button>
-            <button onClick={props.handleReady}>getReadyStatus({props.isReady})</button>
+            <button onClick={props.handleToggleObserver}>Toggle Observer({props.isPlayer})</button>
+            <button onClick={props.handleReady}>Toggle Ready{props.isReady}</button>
             <button onClick={props.handleLeave}>Leave</button>
         </div>
     )
