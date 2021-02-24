@@ -4,6 +4,8 @@ defmodule BullsWeb.Game do
     # create new/reset
     def new(gameName) do
         %{
+            # Track Trun
+            turn: 0,
             # Lobby States
             gameName: gameName,
             game: false,
@@ -47,7 +49,6 @@ defmodule BullsWeb.Game do
             isReady: false
         }
     end 
-
 
     # update the state.players and state.observers by adding userName
     # Availability: All
@@ -152,12 +153,16 @@ defmodule BullsWeb.Game do
 
     # Player pass
     def pass_game(state, userName) do
+        IO.inspect("pass called")
         if(MapSet.member?(state.observers, userName)) do
             {:error, message: "Not a player"};
         else
             #if user hasn't guessed yet
             if !Enum.member?(state.execute, userName) do
-                {:ok, %{state | execute: state.execute ++ [userName]}};
+                {:ok, %{state | 
+                execute: state.execute ++ [userName],
+                tempResults: state.tempResults ++ [[userName, "pass", {0, "0A0B"}]]
+                }};
             else
                 {:error, state}
             end
@@ -165,11 +170,8 @@ defmodule BullsWeb.Game do
     end
     
     defp addWinners(state, winner) do
-        IO.inspect(state.playerWin)
-        IO.inspect("PLAYERWIN")
         cond do
             length(state.tempResults) == 0 && winner > 0 ->
-                IO.inspect("winner")
                 %{state |
                     game: false,
                     execute: []
@@ -204,11 +206,9 @@ defmodule BullsWeb.Game do
     end
 
     defp updateLeaderBoard(state) do
-        # IO.inspect("update leader called")
-        IO.inspect(state.playerWin)
+        IO.inspect("STATE DURING UPDATELEADERBOARD")
+        IO.inspect(state)
         if length(state.playerWin) == 0 do
-            # IO.puts("Return (length=0):");
-            # IO.inspect(state);
             state    
         else 
             head = hd(state.playerWin)
@@ -216,7 +216,6 @@ defmodule BullsWeb.Game do
             isWin = Enum.at(head, 1)
             #isWin = 1 if win 0 if loss
             if Map.has_key?(state.leaderBoard, playerName) do
-                # IO.puts("Leaderbord Update")
                 newState = %{ state |
                     playerWin: tl(state.playerWin),
                     leaderBoard: Map.update!(state.leaderBoard, playerName, fn(prev) ->
@@ -225,9 +224,9 @@ defmodule BullsWeb.Game do
                 }
                 updateLeaderBoard(newState)
             else
-                # IO.puts("Leaderbord Put if key doesnt exist")
                 newLeaderBoard = Map.put(state.leaderBoard, playerName, [isWin, 1-isWin])
                 newState = %{state |
+                    playerWin: tl(state.playerWin),
                     leaderBoard: newLeaderBoard
                 }
                 updateLeaderBoard(newState)
@@ -236,32 +235,69 @@ defmodule BullsWeb.Game do
     end
 
     defp reset(state) do
-        updateLeaderBoard(state)
-        state1 = %{ state |
+        newState = updateLeaderBoard(state)
+        state1 = %{ newState |
             secret: random_secret("", ["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
-            results: [],
-            playerWin: []
+            results: []
         }
         # %{username: false, username: true}
+        IO.inspect("STATE AFTER RESET")
+        IO.inspect(state1)
         newPlayers = Enum.map(state1.players, fn{userName, status} -> {userName, !status} end)
         |> Enum.into(%{})
         %{ state1 | players: newPlayers }
     end
 
+    def add_passed_results(state, players) do
+        IO.inspect("DURING ADD PASSED")
+        IO.inspect(state)
+        IO.inspect(players)
+        if length(players) == 0 do
+            state
+        else 
+            player = hd(players)
+            if Enum.member?(state.execute, player) do
+                add_passed_results(state, tl(players))
+            else
+                newState = %{ state |
+                    tempResults: state.tempResults ++ [[player, "pass", {0, "0A0B"}]]
+                }
+                add_passed_results(newState, tl(players))
+            end
+        end
+    end
+    
+
     def checkout_turn(state) do
         # check if theres a winner 
         # If yes, turn the state.game to false
         # If no, erase state.execute
-        newState = addWinners(state, 0)
-        IO.inspect(state.secret);
-        if !newState.game do
-           reset(newState);
+        IO.inspect("STATE BEFORE CHECKOUT")
+        IO.inspect(state)
+        newState = add_passed_results(state, Map.keys(state.players))
+        IO.inspect("STATE AFTER ADDING PASSED BEFORE WINNER")
+        IO.inspect(newState)
+        newState1 = addWinners(newState, 0)
+        IO.inspect("STATE IN CHECKOUT AFTER ADD WINNERS")
+        IO.inspect(newState1)
+        if !newState1.game do
+            reset(newState1);
         else 
-            %{newState |
-                playerWin: []
+            %{newState1 |
+                playerWin: [],
+                # I added
+                turn: newState1.turn + 1
             }
         end
     end
+
+    def try_checkout(state) do
+        if length(state.execute) == map_size(state.players) && state.game do
+            {:ok, checkout_turn(state)} 
+        else
+            {:error, state}
+        end 
+    end 
 
     # isNaN
     defp isNaN(str) do

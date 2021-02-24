@@ -59,6 +59,8 @@ defmodule BullsWeb.GameChannel do
     userName = socket.assigns[:userName];
     # Toggle observer
     Server.toggle_observer(gameName, userName);
+    # Start Game
+    Server.start_game(gameName);
     # BroadCast
     send(self(), {:after_join, gameName});
     {:noreply, socket};

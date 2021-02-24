@@ -23,6 +23,10 @@ function Game(props) {
   }
   return (
     <div>
+      <input onChange={handleUserNameChange} value={state} type="text" maxLength="4"/>
+      <button onClick={handleGuess}>Guess!</button>
+      <button onClick={props.handleLeave}>Leave</button>
+      <button onClick={props.handlePass}>Pass</button>
       <table>
         <thead>
           <tr>
@@ -35,11 +39,6 @@ function Game(props) {
           {results}
         </tbody>
       </table>
-
-      <input onChange={handleUserNameChange} value={state} type="text" maxLength="4"/>
-      <button onClick={handleGuess}>Guess!</button>
-      <button onClick={props.handleLeave}>Leave</button>
-      <button onClick={props.handlePass}>Pass</button>
     </div>);
 }
 

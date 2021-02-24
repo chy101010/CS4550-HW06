@@ -68,3 +68,18 @@ Game Process Module
 Question:
 Backup Agent？
 Your application should have one channel per named game, which should forward incoming events to the GenServer module？
+
+
+Bugs To Fix:
+Observer toggle should trigger ready
+Display error message
+Previous winners should be shown
+Display player pass
+Maybe a timer countdown???
+
+Handle Manual pass/add to execute and end the turn: By increment the turn, set up a new self_call back and remove the old self_call back
+
+# Turn can be ended through 
+# Pass, Guess, leave
+
+When player leaves, remove from players, 

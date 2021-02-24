@@ -84,7 +84,15 @@ defmodule Bulls.Server do
     # Leave
     def handle_cast({:leave, userName}, state) do
         case Game.leave_game(state, userName) do
-            {:ok, newState} -> {:noreply, newState};
+            {:ok, newState} ->
+             case Game.try_checkout(newState) do
+                    {:ok, checked} ->
+                        send(self(), {:check_out, checked.gameName, checked.turn});
+                        {:noreply, checked};
+                    {:error, unChecked} ->
+                        {:noreply, unChecked};
+                end 
+            # {:noreply, newState};
             {:error, _msg} -> {:noreply, state}
         end
     end
@@ -110,7 +118,15 @@ defmodule Bulls.Server do
     def handle_call({:guess, userName, guess}, _from, state) do
         case Game.guess_game(state, userName, guess) do
             {:error, msg} -> {:reply, {:error, msg}, state};
-            {:ok, newState} -> {:reply, {:ok}, newState};
+            # {:ok, newState} -> {:reply, {:ok}, newState};
+            {:ok, newState} ->
+                case Game.try_checkout(newState) do
+                    {:ok, checked} ->
+                        send(self(), {:check_out, checked.gameName, checked.turn});
+                        {:noreply, checked};
+                    {:error, unChecked} ->
+                        {:noreply, unChecked};
+                end 
         end
     end
 
@@ -120,7 +136,7 @@ defmodule Bulls.Server do
             {:error, oldState} ->
                 {:noreply, oldState};
             {:ok, newState} ->
-                send(self(), {:check_out, gameName});
+                Process.send_after(self(), {:check_out, gameName, 0}, 8000);
                 {:noreply, newState};
         end
     end
@@ -130,18 +146,36 @@ defmodule Bulls.Server do
         case Game.pass_game(state, userName) do
             {:error, _msg} -> 
                 {:noreply, state}
-            {:ok, newSocket} ->
-                {:noreply, newSocket};
+            {:ok, newState} ->
+                case Game.try_checkout(newState) do
+                    {:ok, checked} ->
+                        send(self(), {:check_out, checked.gameName, checked.turn});
+                        {:noreply, checked};
+                    {:error, unChecked} ->
+                        {:noreply, unChecked};
+                end 
         end
     end
 
     # Check out turn
-    def handle_info({:check_out, gameName}, state) do
-        newState = Game.checkout_turn(state);
-        if (newState.game) do
-            Process.send_after(self(), {:check_out, gameName}, 4000);
-        end
-        BullsWeb.Endpoint.broadcast("game:" <> gameName, "view", Game.view(newState));
-        {:noreply, newState};
+    def handle_info({:check_out, gameName, turn}, state) do
+        # Leave/Pass/Guess
+        if(state.turn == turn) do
+            {_msg, newState} = Game.try_checkout(state);
+            if (newState.game) do
+                Process.send_after(self(), {:check_out, gameName, newState.turn}, 8000);
+            end
+            BullsWeb.Endpoint.broadcast("game:" <> gameName, "view", Game.view(newState));
+            {:noreply, newState};
+        else 
+            {:noreply, state};
+        end 
+
+        # newState = Game.checkout_turn(state);
+        # if (newState.game) do
+        #     Process.send_after(self(), {:check_out, gameName}, 4000);
+        # end
+        # BullsWeb.Endpoint.broadcast("game:" <> gameName, "view", Game.view(newState));
+        # {:noreply, newState};
     end
 end
