@@ -32,7 +32,7 @@ let state = {
 // Update the states with the given {@param st}
 export function state_update(st) {
   state = st;
-  console.log(state);
+  console.log(st);
   if (callback) {
     callback(st);
   }

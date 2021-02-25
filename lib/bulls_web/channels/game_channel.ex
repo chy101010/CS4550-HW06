@@ -3,20 +3,23 @@ defmodule BullsWeb.GameChannel do
   alias Bulls.Server
   alias BullsWeb.Game
 
+    # Attaching the given {@ userName} to {@ view} and returns the {@ view}
   defp attachNames(view, userName) do
     Map.put(view, :userName, userName);
   end
 
+  # Attaching the given {@ msg} to {@ view} and returns the {@ view}
   defp attachMsg(view, msg) do 
     Map.put(view, :message, msg);
   end
 
-
+  # Handling user joining a lobby of the {@ gameName} name
+  # Start a new game process if the progress doesn't exist
+  # Redirect the user back to Login if gameName | userName is ""
   @impl true
   def join("game:" <> gameName, %{"userName" => userName} = payload, socket) do
     if(gameName == "" || userName == "") do
       view = Game.leave_view();
-      IO.inspect("called");
       {:ok, view, socket};
     else 
       if authorized?(payload) do
@@ -37,6 +40,8 @@ defmodule BullsWeb.GameChannel do
     end
   end
 
+  # Handling a user leave a lobby/game
+  # When a player leaves a game, it will join back as an observer
   @impl true
   def handle_in("leave", _payload, socket) do
     gameName = socket.assigns[:gameName];
@@ -55,6 +60,7 @@ defmodule BullsWeb.GameChannel do
     {:reply, {:ok, view}, socket};
   end
 
+  # Handling a user's request to switch between observer and player  
   @impl true
   def handle_in("toggleObserver", _payload, socket) do
     gameName = socket.assigns[:gameName];
@@ -68,6 +74,7 @@ defmodule BullsWeb.GameChannel do
     {:noreply, socket};
   end
 
+  # Handling a user's request to switch ready 
   @impl true
   def handle_in("toggleReady", _payload, socket) do
     gameName = socket.assigns[:gameName];
@@ -82,7 +89,7 @@ defmodule BullsWeb.GameChannel do
   end
 
 
-  # TODO display msg to the user
+  # Handling an user's guess
   @impl 
   def handle_in("guess", %{"guess" => guess} = payload, socket) do
     gameName = socket.assigns[:gameName];
@@ -96,6 +103,7 @@ defmodule BullsWeb.GameChannel do
     {:noreply, socket1};
   end
 
+  # Handling a user's pass
   @impl
   def handle_in("pass", _payload, socket) do
     gameName = socket.assigns[:gameName];
@@ -107,7 +115,13 @@ defmodule BullsWeb.GameChannel do
     {:noreply, socket};
   end
 
+  # To remove Warning
+  @impl true
+  def handle_info("onClose", socket) do
+    {:noreply, socket};
+  end 
 
+  # Listening to after_join and broadcast a new view to the subscribers
   @impl true
   def handle_info({:after_join, gameName}, socket) do
     view = Server.get_view(gameName);
@@ -115,13 +129,13 @@ defmodule BullsWeb.GameChannel do
     {:noreply, socket};
   end
 
+  # Intercepting broadcasts and attaches userName and Message
   intercept ["view"]
   @impl true
   def handle_out("view", msg, socket) do
     push(socket, "view", attachMsg(attachNames(msg, socket.assigns[:userName]), socket.assigns[:message]));
     {:noreply, socket}
   end
-
 
   # Add authorization logic here as required.
   defp authorized?(_payload) do

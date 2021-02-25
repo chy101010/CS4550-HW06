@@ -1,18 +1,6 @@
 import React from 'react';
 
 function Lobby(props) {
-
-    // Display
-    // gamename
-    // Display prev winner 
-    // players
-    // leader boarder
-
-    // Function
-    // player or observer
-    // toggle if they're ready
-
-
     // TODO refactor 
     let leaderBoard = [];
     for (const [index, [key, value]] of Object.entries(Object.entries(props.leaderBoard))) {
@@ -45,15 +33,19 @@ function Lobby(props) {
             </tr>
         )
     }
-
+    let prevWinner = "N\A"
+    console.log(props.prevWinner + " called");
+    if(props.prevWinner) {
+        prevWinner = props.prevWinner.toString();
+    } 
     return (
         <div id="lobby">
             <h1>Lobby: {props.gamename}</h1>
-            <h1>Previous Winner: {props.prevWinner}</h1>
+            <h4>Previous Winner: {prevWinner}</h4>
             <table>
                 <thead>
                     <tr>
-                        <th>leaderBoard</th>
+                        <th>LeaderBoard</th>
                         <th>Win/Lose</th>
                     </tr>
                 </thead>
@@ -75,7 +67,7 @@ function Lobby(props) {
             <table>
                 <thead>
                     <tr>
-                        <th>observers</th>
+                        <th>Observers</th>
                     </tr>
                 </thead>
                 <tbody>

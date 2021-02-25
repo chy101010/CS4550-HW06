@@ -13,26 +13,29 @@ function Game(props) {
   }
 
   let results = [];
-  for(let index = 0; index < props.results.length; index++) {
-    results.push(
-      <tr key={index + 50}>
+  for (let index = 0; index < props.results.length; index++) {
+    if (props.results[index][1] !== "pass") {
+      results.push(
+        <tr key={index + 50}>
           <td key={index + 100}>{props.results[index][0]}</td>
           <td key={index + 150}>{props.results[index][1]}</td>
           <td key={index + 100}>{props.results[index][2]}</td>
-      </tr>
+        </tr>
       )
+    }
   }
+
   let message;
-  if(props.message) {
+  if (props.message) {
     message = props.message;
-  } 
-  else{
+  }
+  else {
     message = "Message";
   }
   return (
     <div>
       <h2>{message}</h2>
-      <input onChange={handleUserNameChange} value={state} type="text" maxLength="4"/>
+      <input onChange={handleUserNameChange} value={state} type="text" maxLength="4" />
       <button onClick={handleGuess}>Guess!</button>
       <button onClick={props.handleLeave}>Leave</button>
       <button onClick={props.handlePass}>Pass</button>

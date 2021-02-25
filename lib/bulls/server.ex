@@ -21,28 +21,23 @@ defmodule Bulls.Server do
         end
     end
 
-    # Done
     def start_link(gameName) do
         game = Game.new(gameName);
         GenServer.start_link(__MODULE__, game, name: reg(gameName))
     end
 
-    # Done
     def get_view(gameName) do
         GenServer.call(reg(gameName), :view);
     end
 
-    # Done // TODO? Error Handling
     def add_user(gameName, userName) do
         GenServer.cast(reg(gameName), {:join, userName});
     end
 
-    # Done // TODO? Error Handling
     def leave_user(gameName, userName) do
         GenServer.cast(reg(gameName), {:leave, userName});
     end
 
-    # Done // TODO? Error Handling
     def toggle_observer(gameName, username) do
         GenServer.cast(reg(gameName), {:observer, username});
     end
@@ -120,7 +115,7 @@ defmodule Bulls.Server do
     def handle_cast({:try_check}, state) do
         case Game.try_checkout(state) do
             {:ok, checked} ->
-                Process.send_after(self(), {:check_out, checked.gameName, checked.turn}, 8000);
+                Process.send_after(self(), {:check_out, checked.gameName, checked.turn}, 30000);
                 {:noreply, checked};
             {:error, unChecked} ->
                 {:noreply, unChecked};
@@ -133,7 +128,7 @@ defmodule Bulls.Server do
             {:error, oldState} ->
                 {:noreply, oldState};
             {:ok, newState} ->
-                Process.send_after(self(), {:check_out, gameName, 0}, 8000);
+                Process.send_after(self(), {:check_out, gameName, 0}, 30000);
                 {:noreply, newState};
         end
     end
@@ -154,19 +149,12 @@ defmodule Bulls.Server do
         if(state.turn == turn && state.game) do
             newState = Game.checkout_turn(state);
             if (newState.game) do
-                Process.send_after(self(), {:check_out, gameName, newState.turn}, 8000);
+                Process.send_after(self(), {:check_out, gameName, newState.turn}, 30000);
             end
             BullsWeb.Endpoint.broadcast("game:" <> gameName, "view", Game.view(newState));
             {:noreply, newState};
         else 
             {:noreply, state};
         end 
-
-        # newState = Game.checkout_turn(state);
-        # if (newState.game) do
-        #     Process.send_after(self(), {:check_out, gameName}, 4000);
-        # end
-        # BullsWeb.Endpoint.broadcast("game:" <> gameName, "view", Game.view(newState));
-        # {:noreply, newState};
     end
 end

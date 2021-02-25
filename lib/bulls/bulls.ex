@@ -1,24 +1,27 @@
 defmodule BullsWeb.Game do
 
-    # Done
-    # create new/reset
+    #new game state
     def new(gameName) do
         %{
-            # Track Trun
-            turn: 0,
-            # Lobby States
+            # Lobby States:
             gameName: gameName,
+            # game status
             game: false,
             leaderBoard: %{}, #example: %{ player: [win, loss] }
             players: %{}, #example: %{ player: false}
             observers: MapSet.new(),
             prevWinner: [],
-            # Game states
+            # Game states:
+            #stores results for whole game
             results: [], #example: [[player, guess, result], ...]
-            tempResults: [],
+            #stores the results for current turn
+            tempResults: [], #example: [[player, guess, {win, result}]]
+            #stores the player win/loss for current turn
             playerWin: [], #example [[player, 1], [player2, 0]]
             secret: random_secret("", ["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
+            #list of players that have gone this turn
             execute: [],
+            turn: 0
         }
     end
 
@@ -45,13 +48,11 @@ defmodule BullsWeb.Game do
             observers: [],
             gameName: "",
             userName: "",
-            isPlayer: false,
-            isReady: false
         }
     end 
 
     # update the state.players and state.observers by adding userName
-    # Availability: All
+    # called when user join lobby
     def join_game(state, userName) do
         if(MapSet.member?(state.observers, userName) || Map.has_key?(state.players, userName)) do
             state;
@@ -62,7 +63,6 @@ defmodule BullsWeb.Game do
     end
 
     # update the state.players and state.observers by deleting userName
-    # Availability: All
     def leave_game(state, userName) do
         cond do
             MapSet.member?(state.observers, userName) -> 
@@ -76,7 +76,6 @@ defmodule BullsWeb.Game do
     end
 
     # update the state.players and state.observers by moving the userName from o to p or p to o
-    # Availability: When game hasn't started
     def observer_game(state, userName) do
         if !state.game do
             cond do
@@ -99,7 +98,6 @@ defmodule BullsWeb.Game do
 
 
     # update the state.players by toggling off the ready status of the userName
-    # Availability: When game hasn't started
     def ready_game(state, userName) do
         if(!state.game) do
             cond do
@@ -117,10 +115,12 @@ defmodule BullsWeb.Game do
 
 
     # start the game if all players are ready
-    # Availability: when game hasn't started
+    # resets prevWinner
     def start_game(state) do
-        if (Enum.all?(state.players, fn {_username, status} -> status end) && map_size(state.players) >= 1) do
-            state1 = %{state | game: true};
+        if (Enum.all?(state.players, fn {_username, status} -> status end) && map_size(state.players) >= 4) do
+            state1 = %{state | 
+            game: true,
+            prevWinner: []};
             {:ok, state1}
         else 
             {:error, state}
@@ -139,6 +139,7 @@ defmodule BullsWeb.Game do
                 {resp, msg} = validGuess(state, guess)
                 case validGuess(state, guess) do
                     {:ok, msg} ->
+                        #push to execute, push to tempResults
                         {status, computed} = computeGuess(state.secret, guess, 0, 0, 0);
                         {:ok, msg, %{state | execute: state.execute ++ [userName], 
                             tempResults: state.tempResults ++ [[userName, guess, {status, computed}]]
@@ -146,7 +147,7 @@ defmodule BullsWeb.Game do
                     {:error, msg} -> {:error, msg}
                 end
             else
-                {:ok, state}
+                {:ok, "Already Execute", state}
             end
         end
     end
@@ -158,6 +159,7 @@ defmodule BullsWeb.Game do
         else
             #if user hasn't guessed yet
             if !Enum.member?(state.execute, userName) do
+                #push to execute, push to temp results
                 {:ok, %{state | 
                 execute: state.execute ++ [userName],
                 tempResults: state.tempResults ++ [[userName, "pass", {0, "0A0B"}]]
@@ -168,23 +170,28 @@ defmodule BullsWeb.Game do
         end
     end
     
+    #adds to prevWinner if there are any, push to results, playerWin, and reset tempResults, execute
+    #function recursively iterates through tempResults
     defp addWinners(state, winner) do
         cond do
+            #if tempResults done processed and there is a winner
             length(state.tempResults) == 0 && winner > 0 ->
+                #game status set to false, execute rest
                 %{state |
                     game: false,
                     execute: []
                 }
+            #if tempResults done processed and there is no winner
             length(state.tempResults) == 0 && winner == 0 ->
                 %{state |
                     execute: []
                 }
             true ->
                 head = hd(state.tempResults)
-                #head = [player, guess, {status, computed}]
                 {status, computed} = Enum.at(head, 2)
                 player = Enum.at(head, 0);
                 guess = Enum.at(head, 1);
+                #if player has won, push to prevWinner, playerWin, results, set tail tempResults
                 if status == 1 do
                     state = %{state |
                         prevWinner: state.prevWinner ++ [player],
@@ -194,6 +201,7 @@ defmodule BullsWeb.Game do
                     }
                     addWinners(state, winner+1)
                 else 
+                    #push to results, playerWin, set tail tempResults
                     state = %{state |
                         results: state.results ++ [[player, guess, computed]],
                         tempResults: tl(state.tempResults),
@@ -204,7 +212,9 @@ defmodule BullsWeb.Game do
         end
     end
 
+    #updates the leaderBoard by recursively iterating through playerWin
     defp updateLeaderBoard(state) do
+        #if playerWin is empty, return state
         if length(state.playerWin) == 0 do
             state    
         else 
@@ -212,6 +222,7 @@ defmodule BullsWeb.Game do
             playerName = Enum.at(head, 0)
             isWin = Enum.at(head, 1)
             #isWin = 1 if win 0 if loss
+            #if leaderboard has playerName
             if Map.has_key?(state.leaderBoard, playerName) do
                 newState = %{ state |
                     playerWin: tl(state.playerWin),
@@ -231,6 +242,8 @@ defmodule BullsWeb.Game do
         end
     end
 
+    #resets game states for next round
+    #updates leaderboard, resets secret, results, turn, changes game state to false, and changes player ready status to false
     defp reset(state) do
         newState = updateLeaderBoard(state)
         state1 = %{ newState |
@@ -244,6 +257,7 @@ defmodule BullsWeb.Game do
         %{ state1 | players: newPlayers }
     end
 
+    #recursively iterates through all players and adds a "pass" guess if player has not made a guess
     def add_passed_results(state, players) do
         if length(players) == 0 do
             state
@@ -260,7 +274,7 @@ defmodule BullsWeb.Game do
         end
     end
     
-
+    #called after the end of every turn. Resets game state if game status is false
     def checkout_turn(state) do
         newState = add_passed_results(state, Map.keys(state.players))
         newState1 = addWinners(newState, 0)
@@ -269,12 +283,12 @@ defmodule BullsWeb.Game do
         else 
             %{newState1 |
                 playerWin: [],
-                # I added
                 turn: newState1.turn + 1
             }
         end
     end
 
+    #tries to end the turn if all four players have made a guess
     def try_checkout(state) do
        if length(state.execute) == map_size(state.players) && state.game do
             {:ok, checkout_turn(state)} 

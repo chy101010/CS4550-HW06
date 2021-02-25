@@ -7,7 +7,7 @@ import Game from './game';
 function Main() {
     const [state, setState] = useState({
         results: [],
-        preWinner: [],
+        prevWinner: [],
         leaderBoard: [],
         players: [],
         observers: [],
@@ -79,7 +79,7 @@ function Main() {
                 observers={state.observers}
                 players={state.players}
                 leaderBoard={state.leaderBoard}
-                preWinner={state.preWinner}
+                prevWinner={state.prevWinner}
                 handleReady={handleReady}
                 handleToggleObserver={handleToggleObserver}
                 handleLeave={handleLeave}

@@ -1,10 +1,6 @@
 defmodule Bulls.Sup do 
-    # Client 
+    # Create a supervised game process 
     def start_child(spec) do 
         DynamicSupervisor.start_child(__MODULE__, spec);
     end 
-
-    def terminate_child(gameName) do
-        DynamicSupervisor.terminate_child(__MODULE__, gameName);
-    end
 end 
