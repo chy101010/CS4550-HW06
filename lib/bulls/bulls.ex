@@ -71,7 +71,7 @@ defmodule BullsWeb.Game do
             Map.has_key?(state.players, userName) ->
                 newPlayers = Map.delete(state.players, userName);
                 {:ok, %{state | players: newPlayers}};
-            true -> {:error, message: "Unknown Player"}
+            true -> {:error, "Unknown Player"}
         end
     end
 
@@ -104,14 +104,14 @@ defmodule BullsWeb.Game do
         if(!state.game) do
             cond do
                 MapSet.member?(state.observers, userName) -> 
-                    {:error, messsage: "Not a Player"};
+                    {:error, "Not a Player"};
                 Map.has_key?(state.players, userName) -> 
                     newPlayers = Map.update!(state.players, userName, fn(readyStatus) -> !readyStatus end);
                     {:ok, %{state | players: newPlayers}};
                 true ->  {:error, messsage: "Unknown Player"};     
             end
         else 
-            {:error, message: "Game Started"};
+            {:error, "Game Started"};
         end
     end
 
@@ -132,18 +132,18 @@ defmodule BullsWeb.Game do
     # Else execute the guess
     def guess_game(state, userName, guess) do
         if(MapSet.member?(state.observers, userName)) do
-            {:error, message: "Not a player"};
+            {:error, "Not a player"};
         else
             #if user hasn't guessed yet
             if !Enum.member?(state.execute, userName) do
                 {resp, msg} = validGuess(state, guess)
                 case validGuess(state, guess) do
                     {:ok, msg} ->
-                        {status, computed} = computeGuess(state.secret, guess, 0, 0, 0)
-                            {:ok, %{state | execute: state.execute ++ [userName],
-                                tempResults: state.tempResults ++ [[userName, guess, {status, computed}]]
-                            }}
-                    {:error, msg} -> {:error, message: msg}
+                        {status, computed} = computeGuess(state.secret, guess, 0, 0, 0);
+                        {:ok, msg, %{state | execute: state.execute ++ [userName], 
+                            tempResults: state.tempResults ++ [[userName, guess, {status, computed}]]
+                        }}
+                    {:error, msg} -> {:error, msg}
                 end
             else
                 {:ok, state}
@@ -154,7 +154,7 @@ defmodule BullsWeb.Game do
     # Player pass
     def pass_game(state, userName) do
         if(MapSet.member?(state.observers, userName)) do
-            {:error, message: "Not a player"};
+            {:error, "Not a player"};
         else
             #if user hasn't guessed yet
             if !Enum.member?(state.execute, userName) do
@@ -319,7 +319,7 @@ defmodule BullsWeb.Game do
         guessSet = MapSet.new(String.split(guess, "", trim: true));
         cond do 
             alreadyGuessed(st.results, guess) ->
-                {:error, message: "Invalid: Require New Guess"};
+                {:error, "Invalid: Require New Guess"};
             MapSet.size(guessSet) != 4 || String.length(guess) != 4 -> 
                 {:error, "Invalid: Require 4 Unique Digits"}
             !isNaN(guess) -> 

@@ -13,8 +13,7 @@ function Main() {
         observers: [],
         gameName: "",
         userName: "",
-        isPlayer: false,
-        isReady: false
+        message: "",
     })
 
     useEffect(() => {
@@ -79,9 +78,7 @@ function Main() {
                 gamename={state.gameName}
                 observers={state.observers}
                 players={state.players}
-                isPlayer={state.isPlayer}
                 leaderBoard={state.leaderBoard}
-                isReady={state.isReady}
                 preWinner={state.preWinner}
                 handleReady={handleReady}
                 handleToggleObserver={handleToggleObserver}
@@ -93,6 +90,7 @@ function Main() {
         return (
             <Game
                 results = {state.results} 
+                message = {state.message}
                 handleLeave={handleLeave}
                 handleGuess={handleGuess}
                 handlePass={handlePass}

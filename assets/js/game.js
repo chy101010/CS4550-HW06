@@ -22,8 +22,16 @@ function Game(props) {
       </tr>
       )
   }
+  let message;
+  if(props.message) {
+    message = props.message;
+  } 
+  else{
+    message = "Message";
+  }
   return (
     <div>
+      <h2>{message}</h2>
       <input onChange={handleUserNameChange} value={state} type="text" maxLength="4"/>
       <button onClick={handleGuess}>Guess!</button>
       <button onClick={props.handleLeave}>Leave</button>

@@ -1,5 +1,4 @@
 defmodule Bulls.Server do
-    
     alias BullsWeb.Game
 
     def reg(gameName) do
@@ -113,7 +112,7 @@ defmodule Bulls.Server do
     def handle_call({:guess, userName, guess}, _from, state) do
         case Game.guess_game(state, userName, guess) do
             {:error, msg} -> {:reply, {:error, msg}, state};
-            {:ok, newState} -> {:reply, {:ok}, newState};
+            {:ok, msg, newState} -> {:reply, {:ok, msg}, newState};
         end
     end
 

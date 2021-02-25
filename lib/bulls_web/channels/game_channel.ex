@@ -7,26 +7,33 @@ defmodule BullsWeb.GameChannel do
     Map.put(view, :userName, userName);
   end
 
+  defp attachMsg(view, msg) do 
+    Map.put(view, :message, msg);
+  end
+
+
   @impl true
   def join("game:" <> gameName, %{"userName" => userName} = payload, socket) do
     if(gameName == "" || userName == "") do
       view = Game.leave_view();
+      IO.inspect("called");
       {:ok, view, socket};
-    end
-    if authorized?(payload) do
-      # Creates a game process with the given gameName if doesn't exist
-      Server.start(gameName);
-      # Joins the game process with the give userName
-      Server.add_user(gameName, userName)
-      # Gets the View
-      view = Server.get_view(gameName);
-      # BroadCast
-      send(self(), {:after_join, gameName});
-      socket1 = assign(socket, :userName, userName)
-      |> assign(:gameName, gameName);
-      {:ok, attachNames(view, userName), socket1};
-    else
-      {:error, %{reason: "unauthorized"}}
+    else 
+      if authorized?(payload) do
+        # Creates a game process with the given gameName if doesn't exist
+        Server.start(gameName);
+        # Joins the game process with the give userName
+        Server.add_user(gameName, userName)
+        # Gets the View
+        view = Server.get_view(gameName);
+        # BroadCast
+        send(self(), {:after_join, gameName});
+        socket1 = assign(socket, :userName, userName)
+        |> assign(:gameName, gameName);
+        {:ok, attachNames(view, userName), socket1};
+      else
+        {:error, %{reason: "unauthorized"}}
+      end
     end
   end
 
@@ -80,12 +87,13 @@ defmodule BullsWeb.GameChannel do
   def handle_in("guess", %{"guess" => guess} = payload, socket) do
     gameName = socket.assigns[:gameName];
     userName = socket.assigns[:userName];
-    Server.make_guess(gameName, userName, guess);
+    {_status, msg} = Server.make_guess(gameName, userName, guess);
+    socket1 = assign(socket, :message, msg);
     # Try Check_Out
     Server.try_check(gameName);
     # BroadCast
     send(self(), {:after_join, gameName});
-    {:noreply, socket};
+    {:noreply, socket1};
   end
 
   @impl
@@ -110,7 +118,7 @@ defmodule BullsWeb.GameChannel do
   intercept ["view"]
   @impl true
   def handle_out("view", msg, socket) do
-    push(socket, "view", attachNames(msg, socket.assigns[:userName]));
+    push(socket, "view", attachMsg(attachNames(msg, socket.assigns[:userName]), socket.assigns[:message]));
     {:noreply, socket}
   end
 
