@@ -71,16 +71,9 @@ Your application should have one channel per named game, which should forward in
 
 
 Bugs To Fix:
-Observer toggle should trigger ready
 Display error message
 Previous winners should be shown
-Display player pass
-Maybe a timer countdown???
+Maybe a timer countdown??? (optional)
+When both players leave, anyone that joins lobby are observers so game cannot end
 
-Handle Manual pass/add to execute and end the turn: By increment the turn, set up a new self_call back and remove the old self_call back
-
-# Turn can be ended through 
-# Pass, Guess, leave
-
-!When player leaves, remove from players, 
 !Mutiple winners - handle state.game

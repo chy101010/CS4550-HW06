@@ -3,7 +3,6 @@ defmodule BullsWeb.GameChannel do
   alias Bulls.Server
   alias BullsWeb.Game
 
-
   defp attachNames(view, userName) do
     Map.put(view, :userName, userName);
   end

@@ -1,6 +1,5 @@
 defmodule Bulls.Server do
     
-    
     alias BullsWeb.Game
 
     def reg(gameName) do
@@ -153,7 +152,7 @@ defmodule Bulls.Server do
     # Check out turn
     def handle_info({:check_out, gameName, turn}, state) do
         # Leave/Pass/Guess
-        if(state.turn == turn) do
+        if(state.turn == turn && state.game) do
             newState = Game.checkout_turn(state);
             if (newState.game) do
                 Process.send_after(self(), {:check_out, gameName, newState.turn}, 8000);

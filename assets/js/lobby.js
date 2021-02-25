@@ -83,8 +83,8 @@ function Lobby(props) {
                 </tbody>
             </table>
             <h1>Player: {props.userName}</h1>
-            <button onClick={props.handleToggleObserver}>Toggle Observer({props.isPlayer})</button>
-            <button onClick={props.handleReady}>Toggle Ready{props.isReady}</button>
+            <button onClick={props.handleToggleObserver}>Toggle Observer</button>
+            <button onClick={props.handleReady}>Toggle Ready</button>
             <button onClick={props.handleLeave}>Leave</button>
         </div>
     )

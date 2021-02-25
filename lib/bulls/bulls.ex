@@ -153,7 +153,6 @@ defmodule BullsWeb.Game do
 
     # Player pass
     def pass_game(state, userName) do
-        IO.inspect("pass called")
         if(MapSet.member?(state.observers, userName)) do
             {:error, message: "Not a player"};
         else
@@ -206,8 +205,6 @@ defmodule BullsWeb.Game do
     end
 
     defp updateLeaderBoard(state) do
-        IO.inspect("STATE DURING UPDATELEADERBOARD")
-        IO.inspect(state)
         if length(state.playerWin) == 0 do
             state    
         else 
@@ -239,11 +236,15 @@ defmodule BullsWeb.Game do
         state1 = %{ newState |
             secret: random_secret("", ["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
             results: [],
-            turn: 0
+            turn: 0,
+            game: false
         }
-        # %{username: false, username: true}
+        IO.inspect("AFTER UPDATE LEADERBOARD IN RESET")
+        IO.inspect(state1)
         newPlayers = Enum.map(state1.players, fn{userName, status} -> {userName, !status} end)
         |> Enum.into(%{})
+        IO.inspect("NEW PLAYERS AFTER RESET")
+        IO.inspect(newPlayers)
         %{ state1 | players: newPlayers }
     end
 
@@ -265,17 +266,12 @@ defmodule BullsWeb.Game do
     
 
     def checkout_turn(state) do
-        # check if theres a winner 
-        # If yes, turn the state.game to false
-        # If no, erase state.execute
-        # IO.inspect("STATE BEFORE CHECKOUT")
-        # IO.inspect(state)
+        IO.inspect("BEFORE CHECKOUT")
+        IO.inspect(state)
         newState = add_passed_results(state, Map.keys(state.players))
-        # IO.inspect("STATE AFTER ADDING PASSED BEFORE WINNER")
-        # IO.inspect(newState)
         newState1 = addWinners(newState, 0)
-        # IO.inspect("STATE IN CHECKOUT AFTER ADD WINNERS")
-        # IO.inspect(newState1)
+        IO.inspect("AFTER ADD PASSED AND ADD WINNERS")
+        IO.inspect(newState1)
         if !newState1.game do
             reset(newState1);
         else 
@@ -288,12 +284,12 @@ defmodule BullsWeb.Game do
     end
 
     def try_checkout(state) do
-        if length(state.execute) == map_size(state.players) && state.game do
+       if length(state.execute) == map_size(state.players) && state.game do
             {:ok, checkout_turn(state)} 
         else
             {:error, state}
         end 
-    end 
+    end
 
     # Try reset
     def try_reset(state) do
