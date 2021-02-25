@@ -1,0 +1,15 @@
+[Unit]
+Description=MultiBulls Game
+
+[Service]
+Type=simple
+User=hw06
+Group=hw06
+Restart=on-failure
+Environment=LANG=en_US.UTF-8
+
+WorkingDirectory=/home/hw06/cs4550-hw06
+ExecStart=/bin/bash /home/hw06/cs4550-hw06/start.sh
+
+[Install]
+WantedBy=multi-user.target

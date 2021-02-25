@@ -2,7 +2,7 @@
 
 # Export Elixir in Production MODE
 export MIX_ENV=prod
-export PORT=4801
+export PORT=4900
 export SECRET_KEY_BASE=insecure
 
 mix deps.get --only prod
