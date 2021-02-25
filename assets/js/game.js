@@ -8,6 +8,7 @@ function Game(props) {
   }
 
   function handleGuess() {
+    setState("");
     props.handleGuess(state);
   }
 

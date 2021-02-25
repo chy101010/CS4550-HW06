@@ -239,12 +239,8 @@ defmodule BullsWeb.Game do
             turn: 0,
             game: false
         }
-        IO.inspect("AFTER UPDATE LEADERBOARD IN RESET")
-        IO.inspect(state1)
         newPlayers = Enum.map(state1.players, fn{userName, status} -> {userName, !status} end)
         |> Enum.into(%{})
-        IO.inspect("NEW PLAYERS AFTER RESET")
-        IO.inspect(newPlayers)
         %{ state1 | players: newPlayers }
     end
 
@@ -266,12 +262,8 @@ defmodule BullsWeb.Game do
     
 
     def checkout_turn(state) do
-        IO.inspect("BEFORE CHECKOUT")
-        IO.inspect(state)
         newState = add_passed_results(state, Map.keys(state.players))
         newState1 = addWinners(newState, 0)
-        IO.inspect("AFTER ADD PASSED AND ADD WINNERS")
-        IO.inspect(newState1)
         if !newState1.game do
             reset(newState1);
         else 
